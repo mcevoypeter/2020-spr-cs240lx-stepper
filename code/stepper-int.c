@@ -29,19 +29,17 @@ void stepper_int_handler(unsigned pc) {
 
         // enough time has elapsed to take another step
         if (pos->usec_at_prev_step + pos->usec_between_steps < timer_get_usec()) {
-            if (dir == BACKWARD) {
+            if (dir == BACKWARD) 
                 stepper_step_backward(stepper_int->stepper);
-                pos->goal_steps++;
-            } else if (dir == FORWARD) {
+            else if (dir == FORWARD)
                 stepper_step_forward(stepper_int->stepper);
-                pos->goal_steps--;
-            } else
+            else
                 panic("unknown step direction\n");
             pos->usec_at_prev_step = timer_get_usec();
         }
 
         // more steps to take so back onto the queue it goes
-        if (pos->goal_steps == 0) {
+        if (stepper_int->stepper->step_count == pos->goal_steps) {
             Q_pop(pos_Q);
             pos->status = FINISHED;
             kfree(pos);
@@ -51,18 +49,16 @@ void stepper_int_handler(unsigned pc) {
     PUT32(arm_timer_IRQClear, 1);
 }
 
-static unsigned usec_at_prev_step;
 stepper_int_t * stepper_init_with_int(unsigned dir, unsigned step){
     if(num_steppers == MAX_STEPPERS){
         return NULL;
     }
     kmalloc_init();
 
-    gpio_set_output(dir);
-    gpio_set_output(step);
+    stepper_t * stepper = stepper_init(dir, step);
     stepper_int_t * stepper_int = kmalloc(sizeof(stepper_int_t));
     *stepper_int = (stepper_int_t){
-        .stepper = kmalloc(sizeof(stepper_t)),
+        .stepper = stepper,
         .status = NOT_IN_JOB,
         .positions_Q = (Q_t){
             .head = 0,
@@ -71,14 +67,6 @@ stepper_int_t * stepper_init_with_int(unsigned dir, unsigned step){
         }
     };
 
-    *(stepper_int->stepper) = (stepper_t){
-        .step_count = 0,
-        .dir = dir,
-        .step = step,
-        .MS1 = UNUSED,
-        .MS2 = UNUSED,
-        .MS3 = UNUSED
-    };
     my_steppers[num_steppers++] = stepper_int;
 
     //initialize interrupts; only do once, on the first init
@@ -89,7 +77,6 @@ stepper_int_t * stepper_init_with_int(unsigned dir, unsigned step){
         timer_interrupt_init(STEPPER_INT_TIMER_INT_PERIOD);
         system_enable_interrupts();
     }
-    usec_at_prev_step = timer_get_usec();
     return stepper_int;
 }
 

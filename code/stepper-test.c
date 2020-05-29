@@ -60,7 +60,7 @@ void test_stepper_with_interrupts(){
         while(!stepper_int_position_is_complete(jobs[i])){/*wait*/}
         int pos = stepper_int_get_position_in_steps(stepper);
         printk("job %d done, curr pos %d\n", i, pos);
-        assert(pos == 100*(i+1) * (i % 2 ? 1 : -1));
+        assert(pos == 100*(i+1) * ((i & 1) ? 1 : -1));
     }
     printk("success!");
 }
