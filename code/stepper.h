@@ -10,14 +10,21 @@ typedef enum {
     SIXTEENTH_STEP
 } stepper_microstep_mode_t;
 
+typedef enum {
+    BACKWARD = 0,
+    FORWARD = 1
+} stepper_direction_t;
+
 // see images/a4988_pinout.png
+enum { UNUSED = 0 };
+typedef unsigned gpio_pin_t;
 typedef struct {
     int step_count;
-    unsigned dir;
-    unsigned step;
-    unsigned MS1;
-    unsigned MS2;
-    unsigned MS3;
+    gpio_pin_t dir;
+    gpio_pin_t step;
+    gpio_pin_t MS1;
+    gpio_pin_t MS2;
+    gpio_pin_t MS3;
 } stepper_t;
 
 stepper_t * stepper_init(unsigned dir, unsigned step);

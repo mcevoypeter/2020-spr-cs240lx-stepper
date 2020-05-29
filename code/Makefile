@@ -4,15 +4,15 @@ SOURCES := $(NAME).c stepper.c stepper-int.c
 # SOURCES := $(wildcard ./*.c)
 
 # check that your path is defined.
-ifndef CS140E_PATH
-$(error CS140E_PATH is not set: this should contain the absolute path to where this directory is.  Define it in your shell's initialiation.  For example, .tcshrc for tcsh or .bashrc for bash)
+ifndef CS240LX_2021_PATH
+$(error CS240LX_2021_PATH is not set: this should contain the absolute path to where this directory is.  Define it in your shell's initialiation.  For example, .tcshrc for tcsh or .bashrc for bash)
 endif
 
-include $(CS140E_PATH)/libpi/includes.mk
+include $(CS240LX_2021_PATH)/libpi/includes.mk
 
 CFLAGS += -Wno-unused-function -Wno-unused-variable -falign-functions=4 
 
-OBJS := $(patsubst %.c, %.o, $(SOURCES))
+OBJS := $(patsubst %.c, %.o, $(SOURCES)) interrupts-asm.o int-enable-disable.o
 
 # add all the .h's as dependencies, libpi and the makefile.
 DEPS := $(MEMMAP) $(LPI) $(wildcard ./*.h) ./Makefile 
