@@ -38,7 +38,7 @@ void stepper_int_handler(unsigned pc) {
             pos->usec_at_prev_step = timer_get_usec();
         }
 
-        // more steps to take so back onto the queue it goes
+        // reached our step goal
         if (stepper_int->stepper->step_count == pos->goal_steps) {
             Q_pop(pos_Q);
             pos->status = FINISHED;
@@ -54,6 +54,14 @@ stepper_int_t * stepper_init_with_int(unsigned dir, unsigned step){
         return NULL;
     }
     kmalloc_init();
+    //initialize interrupts; only do once, on the first init
+    if(first_init){
+        first_init = 0;
+        int_init();
+        cycle_cnt_init();
+        timer_interrupt_init(STEPPER_INT_TIMER_INT_PERIOD);
+        system_enable_interrupts();
+    }
 
     stepper_t * stepper = stepper_init(dir, step);
     stepper_int_t * stepper_int = kmalloc(sizeof(stepper_int_t));
@@ -66,17 +74,8 @@ stepper_int_t * stepper_init_with_int(unsigned dir, unsigned step){
             .cnt = 0
         }
     };
-
     my_steppers[num_steppers++] = stepper_int;
 
-    //initialize interrupts; only do once, on the first init
-    if(first_init){
-        first_init = 0;
-        int_init();
-        cycle_cnt_init();
-        timer_interrupt_init(STEPPER_INT_TIMER_INT_PERIOD);
-        system_enable_interrupts();
-    }
     return stepper_int;
 }
 
