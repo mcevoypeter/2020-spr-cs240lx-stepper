@@ -4,6 +4,11 @@ RANDOM.md
 .vscode
 .DS_Store
 *~
+*.bin
+*.elf
+*.list
+*.o
+*.vim
 
 docs
 images-private

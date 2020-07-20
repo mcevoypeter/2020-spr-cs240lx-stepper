@@ -19,10 +19,12 @@ void stepper_int_handler(unsigned pc) {
         return;
     dev_barrier();  
 
-    stepper_int_t * stepper_int = my_steppers[num_steppers-1]; 
-    Q_t * pos_Q = &stepper_int->positions_Q;
+    for (unsigned i = 0; i < num_steppers; i++) {
+        stepper_int_t * stepper_int = my_steppers[i]; 
+        Q_t * pos_Q = &stepper_int->positions_Q;
+        if (Q_empty(pos_Q))
+            continue;
 
-    if (!Q_empty(pos_Q)) {
         stepper_position_t * pos = Q_start(pos_Q);
         pos->status = STARTED;
         stepper_direction_t dir = (pos->goal_steps < 0 ? BACKWARD : FORWARD);
@@ -44,7 +46,7 @@ void stepper_int_handler(unsigned pc) {
             pos->status = FINISHED;
             kfree(pos);
         }
-    } 
+    }
     dev_barrier();
     PUT32(arm_timer_IRQClear, 1);
 }
